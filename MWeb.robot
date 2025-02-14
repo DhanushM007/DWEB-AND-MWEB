@@ -1,46 +1,49 @@
-MWEB Code:
 
 *** Settings ***
 Library    SeleniumLibrary
+
 *** Variables ***
-${BROWSER}             Chrome
-${URL}                 https://www.practo.com
-${SEARCH_TERM}         Dentist
-${SEARCH_BOX}          //div[@class='search-bar-text']
-${LOCSEARCH_BOX}       //input[@data-qa-id='omni-searchbox-locality']
-${LOC_SUGGESTION}      (//div[@data-qa-id='omni-suggestion-main'])[1]
-${DOCSEARCH_BOX}       //input[@data-qa-id='omni-searchbox-keyword']
-${DOC_SEARCH_SUGGESTION}  //div[@data-qa-id='omni-suggestion-listing']//div[@data-qa-id='omni-suggestion-main' and text()='Dentist']
-${DOCTOR_LIST}         (//h2[@data-qa-id='doctor_name'])[2]
-${BOOK_BUTTON}         (//div[@data-qa-id='cta_offline_book' and text()='Book Clinic Visit'])
-${TIME_SLOT}           (//span[@data-qa-id='timeslot_available'])[1]
-${TOMORROW_TAB}        (//div[@class="c-appointment-slots__day-selector__list"]/div[2])
+${BROWSER}  Chrome
+${URL}  https://www.practo.com
+${SEARCH_BOX}  //div[@class='search-bar-text']
+${DOCSEARCH_BOX}   //input[@data-qa-id='omni-searchbox-keyword']
+${LOCATION_SELECTION}  //input[@data-qa-id='omni-searchbox-locality']
+${SEARCH_TERM}  dentist
+${LOCATION}  (//div[@data-qa-id="omni-suggestion-city"])[1]
+${DOC_SEARCH_SUGGESTION}   (//div[@data-qa-id='omni-suggestion-listing'])[1]
+${DOCTOR_LIST}  (//h2[@data-qa-id='doctor_name'])[1]
+${TIME_SLOT}  (//span[@class="slot offline-book"])[1]
+${TOMORROW_TAB}  //span[contains(text(),'tomorrow')]
+
 *** Test Cases ***
 Booking appointment of Third doctor
-    Open Browser    ${URL}    ${BROWSER}    options=add_experimental_option("mobileEmulation", {"deviceName": "iPhone X"})
-    Wait Until Element Is Visible    ${SEARCH_BOX}    timeout=15s
-    Click Element   ${SEARCH_BOX}
-    Wait Until Element Is Visible    ${LOCSEARCH_BOX}    timeout=15s
-    Click Element  ${LOCSEARCH_BOX}
-    Wait Until Element Is Visible    ${LOC_SUGGESTION}    timeout=5s
-    Click Element  ${LOC_SUGGESTION}
-    Wait Until Element Is Visible    ${DOCSEARCH_BOX}    timeout=5s
+    [Documentation]  This test searches for a dentist in Practo's mobile web version and books an available appointment with the third listed doctor.
+    [Tags]  Practo  Booking  Dentist  MobileTest
+    Open Browser  ${URL}  ${BROWSER}  options=add_experimental_option("mobileEmulation", {"deviceName": "iPhone X"})
+
+    Wait Until Element Is Visible  ${SEARCH_BOX}  timeout=15s
+    Click Element  ${SEARCH_BOX}
+
+    Wait Until Element Is Visible  ${LOCATION}  timeout=10s
+    Click Element  ${LOCATION}
+
+    Wait Until Element Is Visible  ${DOCSEARCH_BOX}  timeout=10s
     Click Element  ${DOCSEARCH_BOX}
-    Sleep  3
-    Input Text    ${DOCSEARCH_BOX}    ${SEARCH_TERM}
+    Input Text  ${DOCSEARCH_BOX}  ${SEARCH_TERM}
+    Wait Until Element Is Visible  ${DOC_SEARCH_SUGGESTION}  timeout=10s
     Click Element  ${DOC_SEARCH_SUGGESTION}
-    Sleep  5
-    Scroll Element Into View    ${DOCTOR_LIST}
-    Wait Until Element Is Visible    ${DOCTOR_LIST}    timeout=10s
-    Click Element    ${DOCTOR_LIST}
-    Sleep  2
-    Wait Until Element Is Visible    ${BOOK_BUTTON}    timeout=10s
-    Click Element    ${BOOK_BUTTON}
-    Sleep  5
-    ${is_slot_available}    Run Keyword And Return Status    Element Should Be Visible    ${TIME_SLOT}    timeout=5s
-    IF    '${is_slot_available}' == 'False'
-        Click Element    ${TOMORROW_TAB}
-        Wait Until Element Is Visible    ${TIME_SLOT}    timeout=5s
+
+    Scroll Element Into View  ${DOCTOR_LIST}
+    Wait Until Element Is Visible  ${DOCTOR_LIST}  timeout=10s
+    Click Element  ${DOCTOR_LIST}
+
+    Wait Until Element Is Visible  ${TIME_SLOT}  timeout=5s
+    ${is_slot_available}  Run Keyword And Return Status  Element Should Be Visible  ${TIME_SLOT}  timeout=10s
+    IF  '${is_slot_available}' == 'False'
+        Click Element  ${TOMORROW_TAB}
+        Wait Until Element Is Visible  ${TIME_SLOT}  timeout=5s
     END
-    Click Element    ${TIME_SLOT}
+    Click Element  ${TIME_SLOT}
+
     Sleep  5
+    Close Browser
